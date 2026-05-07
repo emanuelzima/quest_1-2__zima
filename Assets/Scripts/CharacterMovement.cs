@@ -9,6 +9,10 @@ public class Character : MonoBehaviour
     private InputAction moveAction;
     private InputAction jumpAction;
 
+    private Animator animator;
+    private AudioSource footstepSource;
+    private AudioSource sfxSource;
+
     [SerializeField] private float jumpCooldown;
     [SerializeField] private float gravity;
     [SerializeField] private float characterSpeed;
@@ -23,12 +27,28 @@ public class Character : MonoBehaviour
     private Vector3 jumpVelocity;
     private Vector3 characterGravity;
 
+    [SerializeField] private AudioClip footstepSound;
+    [SerializeField] private AudioClip jumpSound;
+
     void Start()
     {
         this.controller = this.GetComponent<CharacterController>();
         this.moveAction = InputSystem.actions.FindAction("Move");
         this.jumpAction = InputSystem.actions.FindAction("Jump");
         this.jumpCooldownTimer = 0.0f;
+
+        this.animator = this.GetComponent<Animator>();
+
+        AudioSource[] audioSources = this.GetComponents<AudioSource>();
+        this.footstepSource = audioSources[0];
+        this.sfxSource = audioSources[1];
+    }
+
+    void SetAnimationState(Vector2 inputMovement)
+    {
+        this.animator.SetBool("IsJumping", this.isJumping);
+        this.animator.SetBool("IsRunning", inputMovement != Vector2.zero);
+        this.animator.SetFloat("MovementForward", inputMovement.magnitude);
     }
 
     void HandleJumping()
@@ -45,6 +65,8 @@ public class Character : MonoBehaviour
             this.jumpVelocity.y = this.jumpSpeed;
             this.jumpCooldownTimer = this.jumpCooldown;
             this.isJumping = true;
+
+            this.sfxSource.PlayOneShot(this.jumpSound);
         }
         if (this.jumpVelocity.y > 0.0f)
         {
@@ -70,12 +92,37 @@ public class Character : MonoBehaviour
         }
     }
 
+    private void HandleFootsteps(Vector2 inputMovement)
+    {
+        bool isMoving = inputMovement != Vector2.zero;
+
+        if (this.controller.isGrounded && isMoving && !this.isJumping)
+        {
+            if (!this.footstepSource.isPlaying)
+            {
+                this.footstepSource.clip = this.footstepSound;
+                this.footstepSource.loop = true;
+                this.footstepSource.Play();
+            }
+        }
+        else
+        {
+            if (this.footstepSource.isPlaying && this.footstepSource.clip == this.footstepSound)
+            {
+                this.footstepSource.Stop();
+            }
+        }
+    }
+
     void FixedUpdate()
     {
         this.HandleJumping();
         this.GetPlatformVelocity();
 
         var inputMovement = this.moveAction.ReadValue<Vector2>();
+
+        this.HandleFootsteps(inputMovement);
+
         var inputRightDirection = this.cameraTransform.right;
         var inputForwardDirection = this.cameraTransform.forward;
         inputRightDirection.y = 0.0f;
@@ -112,5 +159,7 @@ public class Character : MonoBehaviour
         {
             this.controller.Move(this.characterMovement);
         }
+
+        this.SetAnimationState(inputMovement);
     }
 }

@@ -1816,6 +1816,8 @@ MonoBehaviour:
   platformLayerMask:
     serializedVersion: 2
     m_Bits: 64
+  footstepSound: {fileID: 0}
+  jumpSound: {fileID: 0}
 --- !u!143 &1284598443
 CharacterController:
   m_ObjectHideFlags: 0
@@ -2302,6 +2304,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 7659139513224381137, guid: 89e1bc162b405e147ac705e846aed70a, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 23182470fdfa67b499e93dba491301a5, type: 2}
     - target: {fileID: 7928692415477472674, guid: 89e1bc162b405e147ac705e846aed70a, type: 3}
       propertyPath: m_Layer
       value: 7
